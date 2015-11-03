@@ -6,6 +6,23 @@
 #
 # All rights reserved - Do Not Redistribute
 #
+
+# Prevent ORACLE_HOME from having trailing slash
+# see: http://www.dba-oracle.com/sf_ora_27101_shared_memory_realm_does_not_exist.htm
+oracleHome = "#{Pathname.new(node['oraclexe']['oracle-home']).cleanpath}"
+
+# set up environment variables
+magic_shell_environment 'ORACLE_HOME' do
+  value oracleHome
+end
+magic_shell_environment 'ORACLE_SID' do
+  value node['oraclexe']['oracle-sid']
+end
+magic_shell_environment 'PATH' do
+  value "#{File.join(node['oraclexe']['oracle-home'], 'bin')}:#{ENV['PATH']}"
+end
+
+# install some tools
 %w{libaio bc initscripts net-tools wget}.each do | pkg |
   package pkg do
     action :install
@@ -65,16 +82,11 @@ template rspfile do
 end
 
 # Docker start script
-template '/start_oracle.sh' do
-  source 'start_oracle.sh.erb'
+cookbook_file '/start_oracle.sh' do
+  source 'start_oracle.sh'
   mode '0755'
   action :create
 end
-
-# set up environment variables
-ENV['ORACLE_HOME'] = node['oraclexe']['oracle-home']
-ENV['ORACLE_SID'] = node['oraclexe']['oracle-sid']
-ENV['PATH']="#{File.join(node['oraclexe']['oracle-home'], 'bin')}:#{ENV['PATH']}"
 
 execute 'configure via response file' do
   command "/etc/init.d/oracle-xe configure responseFile=#{rspfile}"

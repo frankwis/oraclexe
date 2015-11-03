@@ -6,4 +6,4 @@ default['oraclexe']['oracle-sid'] = 'XE'
 default['oraclexe']['http-port'] = 8079
 default['oraclexe']['listener-port'] = 1521
 default['oraclexe']['password'] = 'oracle'
-default['oraclexe']['dbenable'] = true
+default['oraclexe']['dbenable'] = false
